@@ -1,6 +1,22 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+export const adminOnly = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Access denied: Admins only" });
+  }
+  next();
+};
+
+export const storeOwnerOnly = (req, res, next) => {
+  if (req.user.role !== "store_owner") {
+    return res
+      .status(403)
+      .json({ message: "Access denied: Store Owners only" });
+  }
+  next();
+};
+
 const protect = async (req, res, next) => {
   let token;
 
