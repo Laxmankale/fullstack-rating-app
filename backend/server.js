@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes.js";
 import storeRoutes from "./routes/storeRoutes.js";
 import ratingRoutes from "./routes/ratingRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import errorHandler from "./middleware/errorMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -16,8 +17,8 @@ app.use(express.json());
 connectDB();
 
 // Sync Models
-sequelize.sync().then(() => {
-  console.log("✅ Database & tables created!");
+sequelize.sync({ alter: true }).then(() => {
+  console.log(" Database & tables created!");
 });
 
 // Routes
@@ -25,8 +26,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/admin", adminRoutes);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });

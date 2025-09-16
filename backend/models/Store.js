@@ -6,6 +6,9 @@ const Store = sequelize.define("Store", {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: { msg: "Store name is required" },
+    },
   },
   email: {
     type: DataTypes.STRING,
@@ -18,6 +21,9 @@ const Store = sequelize.define("Store", {
   address: {
     type: DataTypes.STRING(400),
     allowNull: false,
+    validate: {
+      notEmpty: { msg: "Address is required" },
+    },
   },
 });
 

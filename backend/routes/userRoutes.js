@@ -24,4 +24,5 @@ router.get("/profile", protect, getProfile);
 router.put("/update-password", protect, updatePassword);
 router.get("/stores", protect, listStoresWithUserRating);
 router.get("/stores/search", protect, searchStores);
+
 export default router;

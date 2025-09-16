@@ -44,7 +44,7 @@ export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // Check required fields
+    // Required fields check
     if (!name || !email || !password) {
       return res
         .status(400)
@@ -56,65 +56,45 @@ export const registerUser = async (req, res) => {
     if (userExists)
       return res.status(400).json({ message: "User already exists" });
 
-    // Normal registration (self signup)
-    if (!role || role === "normal") {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role: "normal",
-      });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      return res.status(201).json({
-        message: "User created successfully",
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
-      });
+    // Build payload
+    const payload = { name, email, password: hashedPassword };
+
+    // Handle optional role (only admin/store_owner)
+    if (role) {
+      const r = String(role).toLowerCase();
+      if (r === "admin") payload.role = "admin";
+      else if (r === "store_owner" || r === "storeowner")
+        payload.role = "store_owner";
     }
 
-    // Admin or Store Owner creation → Only existing admin can create
-    if (role === "admin" || role === "store_owner") {
-      // req.user must exist and be admin
-      if (!req.user || req.user.role !== "admin") {
-        return res
-          .status(403)
-          .json({
-            message: "Only admins can create admin or store owner users",
-          });
-      }
+    // Create user
+    const user = await User.create(payload);
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role,
-      });
-
-      return res.status(201).json({
-        message: "User created successfully",
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
-      });
-    }
+    res.status(201).json({
+      message: "User created successfully",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
   } catch (error) {
+    console.error("registerUser error:", error);
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(400).json({
+        message: "Email already in use",
+        errors: error.errors.map((e) => e.message),
+      });
+    }
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 // Get All Users
 export const getUsers = async (req, res) => {
@@ -217,3 +197,4 @@ export const searchStores = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
