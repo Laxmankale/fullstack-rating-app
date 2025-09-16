@@ -1,4 +1,7 @@
 import User from "../models/User.js";
+import Store from "../models/Store.js";
+import Rating from "../models/Rating.js";
+import { Op } from "sequelize";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
 
@@ -139,3 +142,78 @@ export const getProfile = async (req, res) => {
   }
 };
 
+// Update password
+export const updatePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "Old and new password required" });
+    }
+
+    const user = await User.findByPk(userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch)
+      return res.status(401).json({ message: "Old password incorrect" });
+
+    // hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//  List all stores (with user's own rating if exists)
+export const listStoresWithUserRating = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const stores = await Store.findAll({
+      include: [
+        {
+          model: Rating,
+          attributes: ["rating"],
+          where: { userId },
+          required: false, // include even if user hasn't rated
+        },
+      ],
+    });
+
+    res.json(stores);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//  Search stores by name & address
+export const searchStores = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const stores = await Store.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.like]: `%${query}%` } },
+          { address: { [Op.like]: `%${query}%` } },
+        ],
+      },
+    });
+
+    res.json(stores);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

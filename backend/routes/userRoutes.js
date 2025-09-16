@@ -6,6 +6,9 @@ import {
   getUsers,
   loginUser,
   getProfile,
+  updatePassword,
+  listStoresWithUserRating,
+  searchStores,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -15,7 +18,10 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 // Protected routes
-router.post("/create", protect, adminOnly, registerUser); //only existing admin can create new Admin not noram user
-router.get("/", protect, adminOnly, getUsers);      // Admin-only
-router.get("/profile", protect, getProfile);       // Any logged-in user
+router.post("/create", protect, adminOnly, registerUser); 
+router.get("/", protect, adminOnly, getUsers); 
+router.get("/profile", protect, getProfile); 
+router.put("/update-password", protect, updatePassword);
+router.get("/stores", protect, listStoresWithUserRating);
+router.get("/stores/search", protect, searchStores);
 export default router;
