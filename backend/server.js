@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import { connectDB, sequelize } from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import storeRoutes from "./routes/storeRoutes.js";
@@ -12,6 +13,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(cors());
 
 // DB Connection
 connectDB();

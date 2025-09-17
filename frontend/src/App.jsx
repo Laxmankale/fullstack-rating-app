@@ -1,24 +1,24 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
+import UserDashboard from "./pages/UserDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import StoreOwnerDashboard from "./pages/StoreOwnerDashboard";
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="p-4 bg-gray-900 text-white flex gap-4">
-        <Link to="/login">Login</Link>
-        <Link to="/signup">Signup</Link>
-        <Link to="/dashboard">Dashboard</Link>
-      </nav>
-
+    <Router>
+      <Navbar />
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/user" element={<UserDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/store-owner" element={<StoreOwnerDashboard />} />
       </Routes>
-    </div>
+    </Router>
   );
 }
-
-export default App;
